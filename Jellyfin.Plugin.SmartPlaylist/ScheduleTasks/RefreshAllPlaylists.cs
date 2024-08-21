@@ -80,7 +80,7 @@ namespace Jellyfin.Plugin.SmartPlaylist.ScheduleTasks
             var dtos = await _plStore.GetAllSmartPlaylistsAsync();
             foreach (var dto in dtos)
             {
-                var smartPlaylist = new SmartPlaylist(dto);
+                var smartPlaylist = new SmartPlaylist(dto, _logger);
 
                 var user = _userManager.GetUserByName(smartPlaylist.User);
                 List<Playlist> p;
@@ -106,7 +106,9 @@ namespace Jellyfin.Plugin.SmartPlaylist.ScheduleTasks
                     p = playlists.Where(x => x.Id.ToString().Replace("-", "") == dto.Id).ToList();
                 }
 
-                var newItems = smartPlaylist.FilterPlaylistItems(GetAllUserMedia(user), _libraryManager, user);
+                var allMedia = GetAllUserMedia(user);
+                _logger.LogInformation($"Found media items: {allMedia.ToArray().Length}");
+                var newItems = smartPlaylist.FilterPlaylistItems(allMedia, _libraryManager, user);
 
                 var playlist = p.First();
                 var query = new InternalItemsQuery(user)

@@ -13,6 +13,7 @@ namespace Jellyfin.Plugin.SmartPlaylist.QueryEngine
         {
             var left = System.Linq.Expressions.Expression.Property(param, r.MemberName);
             var tProp = typeof(T).GetProperty(r.MemberName)?.PropertyType;
+
             // is the operator a known .NET operator?
             if (Enum.TryParse(r.Operator, out ExpressionType tBinary))
             {

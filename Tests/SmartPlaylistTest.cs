@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using Jellyfin.Plugin.SmartPlaylist;
 using Jellyfin.Plugin.SmartPlaylist.QueryEngine;
+using Microsoft.Extensions.Logging;
+using Moq;
 using Xunit;
 
 namespace Tests
@@ -32,7 +34,9 @@ namespace Tests
             {
                 Name = "Release Date Descending"
             };
-            var smartPlaylist = new SmartPlaylist(dto);
+
+            var mockLogger = new Mock<ILogger<Jellyfin.Plugin.SmartPlaylist.SmartPlaylist>>();
+            var smartPlaylist = new SmartPlaylist(dto, mockLogger.Object);
 
             Assert.Equal(1000, smartPlaylist.MaxItems);
             Assert.Equal("87ccaa10-f801-4a7a-be40-46ede34adb22", smartPlaylist.Id);

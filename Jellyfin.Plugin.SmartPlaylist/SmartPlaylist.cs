@@ -5,13 +5,17 @@ using Jellyfin.Data.Entities;
 using Jellyfin.Plugin.SmartPlaylist.QueryEngine;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using Microsoft.Extensions.Logging;
 
 namespace Jellyfin.Plugin.SmartPlaylist
 {
     public class SmartPlaylist
     {
-        public SmartPlaylist(SmartPlaylistDto dto)
+        private readonly ILogger _logger;
+
+        public SmartPlaylist(SmartPlaylistDto dto, ILogger logger)
         {
+            _logger = logger;
             Id = dto.Id;
             Name = dto.Name;
             FileName = dto.FileName;
@@ -64,6 +68,7 @@ namespace Jellyfin.Plugin.SmartPlaylist
             var results = new List<BaseItem>();
 
             var compiledRules = CompileRuleSets();
+            _logger.LogInformation($"Found {compiledRules.ToArray().Length} compiled rules");
             foreach (var i in items)
             {
                 var operand = OperandFactory.GetMediaType(libraryManager, i, user);
@@ -71,6 +76,7 @@ namespace Jellyfin.Plugin.SmartPlaylist
                 if (compiledRules.Any(set => set.All(rule => rule(operand)))) results.Add(i);
             }
 
+            _logger.LogInformation($"Found {results.ToArray().Length} results");
             return Order.OrderBy(results).Select(x => x.Id);
         }
 
