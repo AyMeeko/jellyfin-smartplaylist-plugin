@@ -7,32 +7,37 @@
 
   outputs = { self, nixpkgs }:
     let
-      system = "x86_64-linux";
-      pkgs = import nixpkgs { inherit system; };
+      supportedSystems = [ "x86_64-linux" "x86_64-darwin" ];
+      forAllSystems = f: nixpkgs.lib.genAttrs supportedSystems (system: f system);
+      pkgs = forAllSystems (system: import nixpkgs { inherit system; });
     in
     {
-      devShell.${system} = pkgs.mkShell {
-        buildInputs = [
-          pkgs.dotnet-sdk_8
-        ];
-      };
+      devShell = forAllSystems (system:
+        pkgs.${system}.mkShell {
+          buildInputs = [
+            pkgs.${system}.dotnet-sdk_8
+          ];
+        });
 
-      packages.${system}.default = pkgs.stdenv.mkDerivation {
-        name = "jellyfin-plugin";
-        src = ./.;
+      packages = forAllSystems (system:
+        {
+          default = pkgs.${system}.stdenv.mkDerivation {
+            name = "jellyfin-plugin";
+            src = ./.;
 
-        buildInputs = [
-          pkgs.dotnet-sdk_8
-        ];
+            buildInputs = [
+              pkgs.${system}.dotnet-sdk_8
+            ];
 
-        buildPhase = ''
-          dotnet build --configuration Release
-        '';
+            buildPhase = ''
+              dotnet build --configuration Release
+            '';
 
-        installPhase = ''
-          mkdir -p $out/bin
-          cp bin/Release/net8.0/*.dll $out/bin/
-        '';
-      };
+            installPhase = ''
+              mkdir -p $out/bin
+              cp bin/Release/net8.0/*.dll $out/bin/
+            '';
+          };
+        });
     };
 }
