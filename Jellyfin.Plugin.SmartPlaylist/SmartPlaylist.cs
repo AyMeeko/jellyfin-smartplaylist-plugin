@@ -39,6 +39,12 @@ namespace Jellyfin.Plugin.SmartPlaylist
                 case "Release Date Descending":
                     Order = new PremiereDateOrderDesc();
                     break;
+                case "Alphabetical Ascending":
+                    Order = new AlphabeticalAsc();
+                    break;
+                case "Alphabetical Descending":
+                    Order = new AlphabeticalDesc();
+                    break;
                 default:
                     Order = new NoOrder();
                     break;
@@ -137,6 +143,26 @@ namespace Jellyfin.Plugin.SmartPlaylist
         public override IEnumerable<BaseItem> OrderBy(IEnumerable<BaseItem> items)
         {
             return items.OrderByDescending(x => x.PremiereDate);
+        }
+    }
+
+    public class AlphabeticalAsc : Order
+    {
+        public override string Name => "Alphabetical Ascending";
+
+        public override IEnumerable<BaseItem> OrderBy(IEnumerable<BaseItem> items)
+        {
+            return items.OrderBy(x => x.Name);
+        }
+    }
+
+    public class AlphabeticalDesc : Order
+    {
+        public override string Name => "Alphabetical Descending";
+
+        public override IEnumerable<BaseItem> OrderBy(IEnumerable<BaseItem> items)
+        {
+            return items.OrderByDescending(x => x.Name);
         }
     }
 }
