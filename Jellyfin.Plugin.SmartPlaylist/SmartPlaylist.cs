@@ -65,15 +65,34 @@ namespace Jellyfin.Plugin.SmartPlaylist
         public IEnumerable<Guid> FilterPlaylistItems(IEnumerable<BaseItem> items, ILibraryManager libraryManager,
             User user)
         {
+            _logger.LogInformation("Filtering playlist items...");
             var results = new List<BaseItem>();
 
             var compiledRules = CompileRuleSets();
-            _logger.LogInformation($"Found {compiledRules.ToArray().Length} compiled rules");
+            _logger.LogInformation("Compiled {0} rule sets", compiledRules.Count);
+
             foreach (var i in items)
             {
+                _logger.LogInformation("Checking item: {0} with tags: {1}", i.Name, string.Join(", ", i.Tags));
                 var operand = OperandFactory.GetMediaType(libraryManager, i, user);
 
-                if (compiledRules.Any(set => set.All(rule => rule(operand)))) results.Add(i);
+                if (compiledRules.Any(set =>
+                {
+                    _logger.LogInformation("Checking rule set...");
+                    return set.All(rule =>
+                    {
+                        _logger.LogInformation("Evaluating rule...{0}", rule(operand));
+                        return rule(operand);
+                    });
+                }))
+                {
+                    _logger.LogInformation("Item '{0}' matches rules, adding to results...", i.Name);
+                    results.Add(i);
+                }
+                else
+                {
+                    _logger.LogInformation("Item '{0}' does not match rules, skipping...", i.Name);
+                }
             }
 
             _logger.LogInformation($"Found {results.ToArray().Length} results");

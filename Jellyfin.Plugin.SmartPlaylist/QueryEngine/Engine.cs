@@ -14,6 +14,13 @@ namespace Jellyfin.Plugin.SmartPlaylist.QueryEngine
             var left = System.Linq.Expressions.Expression.Property(param, r.MemberName);
             var tProp = typeof(T).GetProperty(r.MemberName)?.PropertyType;
 
+            if (r.MemberName == "Tags")
+            {
+                var method = typeof(List<string>).GetMethod("Contains", new[] { typeof(string) });
+                var right = System.Linq.Expressions.Expression.Constant(r.TargetValue);
+                return System.Linq.Expressions.Expression.Call(left, method, right);
+            }
+
             // is the operator a known .NET operator?
             if (Enum.TryParse(r.Operator, out ExpressionType tBinary))
             {
@@ -52,6 +59,8 @@ namespace Jellyfin.Plugin.SmartPlaylist.QueryEngine
                 var tParam = method.GetParameters()[0].ParameterType;
                 var right = System.Linq.Expressions.Expression.Constant(Convert.ChangeType(r.TargetValue, tParam));
                 // use a method call, e.g. 'Contains' -> 'u.Tags.Contains(some_tag)'
+                // tProp == "List<string>"
+                // ['foo', 'bar'] contains 'foo'
                 return System.Linq.Expressions.Expression.Call(left, method, right);
             }
         }
