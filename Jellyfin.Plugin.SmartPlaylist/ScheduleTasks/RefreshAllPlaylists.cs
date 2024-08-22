@@ -107,7 +107,7 @@ namespace Jellyfin.Plugin.SmartPlaylist.ScheduleTasks
                 }
 
                 var allMedia = GetAllUserMedia(user);
-                _logger.LogInformation($"Found media items: {allMedia.ToArray().Length}");
+                // _logger.LogInformation($"Found media items: {allMedia.ToArray().Length}");
                 var newItems = smartPlaylist.FilterPlaylistItems(allMedia, _libraryManager, user);
 
                 var playlist = p.First();
